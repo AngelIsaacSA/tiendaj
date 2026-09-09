@@ -1,0 +1,5 @@
+[tool.ruff]
+extend-exclude = ["alembic/versions"]
+
+[tool.ruff.lint]
+extend-select = ["I", "UP"]
