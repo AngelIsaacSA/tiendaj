@@ -1,0 +1,44 @@
+services:
+  db:
+    image: postgres:16-alpine
+    environment:
+      POSTGRES_USER: tiendaj
+      POSTGRES_PASSWORD: tiendaj
+      POSTGRES_DB: tiendaj
+    volumes:
+      - db_data:/var/lib/postgresql/data
+    ports:
+      - "5432:5432"
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U tiendaj"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+
+  backend:
+    build:
+      context: ../backend
+    environment:
+      DATABASE_URL: postgresql+psycopg://tiendaj:tiendaj@db:5432/tiendaj
+      JWT_SECRET: dev-secret-not-for-production
+    ports:
+      - "8000:8000"
+    depends_on:
+      db:
+        condition: service_healthy
+
+  frontend:
+    build:
+      context: ../frontend
+      dockerfile: Dockerfile.dev
+    environment:
+      VITE_API_URL: http://localhost:8000
+    volumes:
+      - ../frontend/src:/app/src
+    ports:
+      - "5173:5173"
+    depends_on:
+      - backend
+
+volumes:
+  db_data:
